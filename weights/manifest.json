@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "models": {
+    "arabidopsis": {
+      "path": "weights/arabidopsis/fold_0.pt",
+      "sha256": "a8bc6ec702d3143985b4e1ba56c23334a61396b87855006b16093173da04268d",
+      "model_name": "arabidopsis",
+      "fold": 0,
+      "input_length": 8192,
+      "output_region_length": 4096,
+      "bin_size": 8,
+      "n_bins": 512,
+      "tissues": [
+        "root",
+        "seedling",
+        "seed",
+        "inflorescences",
+        "fruit",
+        "leaf",
+        "shoot",
+        "flower"
+      ]
+    },
+    "rice_nip": {
+      "path": "weights/rice_nip/fold_0.pt",
+      "sha256": "60b32288914a6cc394a0a52ba2e1275c38002eb88a9a1cf5fe101392923ac867",
+      "model_name": "rice_nip",
+      "fold": 0,
+      "input_length": 8192,
+      "output_region_length": 4096,
+      "bin_size": 8,
+      "n_bins": 512,
+      "tissues": [
+        "callus",
+        "embryo",
+        "meristem",
+        "female_reproductive_tissue",
+        "male_reproductive_tissue",
+        "root",
+        "stem",
+        "leaf"
+      ]
+    }
+  }
+}

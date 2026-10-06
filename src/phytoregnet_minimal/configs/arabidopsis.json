@@ -1,0 +1,64 @@
+{
+  "model_name": "arabidopsis",
+  "species": "Arabidopsis thaliana",
+  "accession": null,
+  "model_params": {
+    "inputlen": 8192,
+    "target_region_len": 4096,
+    "bin_size": 8,
+    "n_bins": 512,
+    "num_targets": 8,
+    "base_filters": 32,
+    "dropout": 0.1,
+    "norm_type": "bn",
+    "act": "relu",
+    "use_se": true,
+    "use_gated_skip": true,
+    "branch_channels": 128,
+    "use_transformer": true,
+    "tf_d_model": 96,
+    "tf_n_heads": 6,
+    "tf_n_layers": 2,
+    "tf_ffn_dim": 192,
+    "tf_dropout": 0.1,
+    "tf_attn_dropout": 0.1,
+    "tf_drop_path": 0.05
+  },
+  "tracks": [
+    {
+      "name": "root",
+      "label": "Root"
+    },
+    {
+      "name": "seedling",
+      "label": "Seedling"
+    },
+    {
+      "name": "seed",
+      "label": "Seed"
+    },
+    {
+      "name": "inflorescences",
+      "label": "Inflorescences"
+    },
+    {
+      "name": "fruit",
+      "label": "Fruit"
+    },
+    {
+      "name": "leaf",
+      "label": "Leaf"
+    },
+    {
+      "name": "shoot",
+      "label": "Shoot"
+    },
+    {
+      "name": "flower",
+      "label": "Flower"
+    }
+  ],
+  "input_length": 8192,
+  "output_region_length": 4096,
+  "bin_size": 8
+}

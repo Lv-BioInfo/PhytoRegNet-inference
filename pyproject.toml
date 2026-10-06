@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phytoregnet-minimal"
+version = "0.1.0"
+description = "Minimal PhytoRegNet DNA sequence-to-accessibility inference"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = ["numpy>=1.24,<2", "torch>=2.3,<3"]
+
+[project.scripts]
+phytoregnet-predict = "phytoregnet_minimal.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+phytoregnet_minimal = ["configs/*.json"]

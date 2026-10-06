@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+outputs/
+predictions/
+
+# Keep the two example checkpoints, model configs and example FASTA.
+# This file is for a standalone checkout of the minimal release.

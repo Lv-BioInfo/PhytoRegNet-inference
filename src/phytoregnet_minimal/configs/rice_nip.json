@@ -1,0 +1,64 @@
+{
+  "model_name": "rice_nip",
+  "species": "Oryza sativa",
+  "accession": "Nipponbare",
+  "model_params": {
+    "inputlen": 8192,
+    "target_region_len": 4096,
+    "bin_size": 8,
+    "n_bins": 512,
+    "num_targets": 8,
+    "base_filters": 48,
+    "dropout": 0.1,
+    "norm_type": "bn",
+    "act": "relu",
+    "use_se": true,
+    "use_gated_skip": true,
+    "branch_channels": 192,
+    "use_transformer": true,
+    "tf_d_model": 144,
+    "tf_n_heads": 6,
+    "tf_n_layers": 4,
+    "tf_ffn_dim": 384,
+    "tf_dropout": 0.1,
+    "tf_attn_dropout": 0.1,
+    "tf_drop_path": 0.08
+  },
+  "tracks": [
+    {
+      "name": "callus",
+      "label": "Callus"
+    },
+    {
+      "name": "embryo",
+      "label": "Plumule"
+    },
+    {
+      "name": "meristem",
+      "label": "Apical meristem"
+    },
+    {
+      "name": "female_reproductive_tissue",
+      "label": "Pistil"
+    },
+    {
+      "name": "male_reproductive_tissue",
+      "label": "Stamen"
+    },
+    {
+      "name": "root",
+      "label": "Root"
+    },
+    {
+      "name": "stem",
+      "label": "Stem"
+    },
+    {
+      "name": "leaf",
+      "label": "Leaf"
+    }
+  ],
+  "input_length": 8192,
+  "output_region_length": 4096,
+  "bin_size": 8
+}
