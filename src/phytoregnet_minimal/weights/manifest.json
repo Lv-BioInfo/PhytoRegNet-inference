@@ -41,5 +41,7 @@
         "leaf"
       ]
     }
-  }
+  },
+  "license": "MIT",
+  "path_base": "phytoregnet_minimal package directory"
 }

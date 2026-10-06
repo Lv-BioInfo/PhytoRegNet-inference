@@ -1,0 +1,51 @@
+{% set name = "phytoregnet" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  entry_points:
+    - phytoregnet-predict = phytoregnet_minimal.cli:main
+
+requirements:
+  host:
+    - python >=3.10,<3.13
+    - pip
+    - setuptools >=77.0.3
+    - wheel
+  run:
+    - python >=3.10,<3.13
+    - numpy >=1.24,<2
+    - pytorch-cpu >=2.6,<3
+
+test:
+  imports:
+    - phytoregnet_minimal
+    - phytoregnet_minimal.inference
+  commands:
+    - phytoregnet-predict --help
+    - phytoregnet-predict --write-example demo.fa
+    - phytoregnet-predict --model arabidopsis --fasta demo.fa --output-prefix smoke/arabidopsis
+    - phytoregnet-predict --model rice_nip --fasta demo.fa --output-prefix smoke/rice_nip
+
+about:
+  home: https://github.com/Lv-BioInfo/PhytoRegNet-inference
+  license: MIT
+  license_file: LICENSE
+  summary: Minimal PhytoRegNet DNA sequence-to-accessibility inference
+  description: |
+    CPU inference for Arabidopsis and rice Nipponbare using bundled fold 0
+    checkpoints. An 8192-bp DNA sequence produces eight tissue signal profiles
+    and eight predicted total signal values.
+
+extra:
+  recipe-maintainers:
+    - Lv-BioInfo

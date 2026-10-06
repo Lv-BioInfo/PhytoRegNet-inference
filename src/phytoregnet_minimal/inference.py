@@ -48,6 +48,15 @@ def sha256_file(path: str | Path) -> str:
     return digest.hexdigest()
 
 
+def bundled_checkpoint_path(model_name: str) -> Path:
+    """Locate the fold 0 checkpoint inside an installed pip or conda package."""
+    if model_name not in MODEL_NAMES:
+        raise ValueError(f"Unknown model {model_name!r}; choose from {MODEL_NAMES}.")
+    return Path(
+        str(files("phytoregnet_minimal").joinpath("weights", model_name, "fold_0.pt"))
+    )
+
+
 class Predictor:
     """Single-checkpoint, float32 forward inference in the supplied orientation.
 
@@ -55,12 +64,28 @@ class Predictor:
     the independent count head's log(1 + total signal) prediction.
     """
 
-    def __init__(self, model_name: str, checkpoint: str | Path, device: str = "cpu"):
+    def __init__(
+        self,
+        model_name: str = "arabidopsis",
+        checkpoint: str | Path | None = None,
+        device: str = "cpu",
+    ):
         self.config = load_config(model_name)
         self.model_name = model_name
-        self.checkpoint = Path(checkpoint)
+        self.checkpoint = (
+            bundled_checkpoint_path(model_name) if checkpoint is None else Path(checkpoint)
+        )
         if not self.checkpoint.is_file():
             raise FileNotFoundError(f"Checkpoint not found: {self.checkpoint}")
+        self.checkpoint_sha256 = sha256_file(self.checkpoint)
+        if checkpoint is None:
+            manifest = json.loads(
+                files("phytoregnet_minimal")
+                .joinpath("weights", "manifest.json")
+                .read_text(encoding="utf-8")
+            )
+            if self.checkpoint_sha256 != manifest["models"][model_name]["sha256"]:
+                raise ValueError("The bundled checkpoint failed its SHA-256 check.")
         self.device = torch.device(device)
         if self.device.type not in {"cpu", "cuda"}:
             raise ValueError(
@@ -83,7 +108,6 @@ class Predictor:
         # An architecture mismatch must fail rather than silently skip weights.
         self.model.load_state_dict(state, strict=True)
         self.model.to(device=self.device, dtype=torch.float32).eval()
-        self.checkpoint_sha256 = sha256_file(self.checkpoint)
         self.track_names = [track["name"] for track in self.config["tracks"]]
         self.track_labels = [track["label"] for track in self.config["tracks"]]
         params = self.config["model_params"]

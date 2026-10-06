@@ -1,6 +1,6 @@
 # PhytoRegNet: minimal inference release
 
-[中文说明](README.zh-CN.md)
+[中文说明](https://github.com/Lv-BioInfo/PhytoRegNet-inference/blob/main/README.zh-CN.md)
 
 PhytoRegNet predicts tissue-resolved chromatin-accessibility signal from DNA
 sequence. This standalone release provides the model, two trained example
@@ -12,9 +12,47 @@ log-transformed total signal for each tissue.
 
 ## 1. Install
 
-Use Python **3.10–3.12**. A CPU is sufficient for the examples.
+Use Python **3.10–3.12**. A CPU is sufficient for the examples. Code, model
+configurations, both checkpoints and the demo FASTA are included in each
+installation. No model download or GitHub checkout is needed after installing
+a wheel or conda package.
 
-On x86-64 Linux or Windows, create a virtual environment from this directory:
+The `0.1.0` distribution files are prepared locally; public registry uploads
+are pending. Once published, install from PyPI with:
+
+```bash
+python -m pip install phytoregnet
+```
+
+For a smaller CPU-only installation on x86-64 Linux or Windows, install the
+CPU PyTorch build first, then install PhytoRegNet:
+
+```bash
+python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install phytoregnet
+```
+
+Once the conda package is uploaded, install into an existing Python 3.10–3.12
+environment with the publisher's channel name in place of `YOUR_CHANNEL`:
+
+```bash
+conda install --override-channels -c YOUR_CHANNEL -c conda-forge phytoregnet
+```
+
+For a new conda environment:
+
+```bash
+conda create -n phytoregnet --override-channels \
+  -c YOUR_CHANNEL -c conda-forge python=3.11 phytoregnet
+conda activate phytoregnet
+```
+
+The conda recipe uses `pytorch-cpu`. See [publishing instructions](https://github.com/Lv-BioInfo/PhytoRegNet-inference/blob/main/PUBLISHING.zh-CN.md)
+for local package builds and registry uploads.
+
+### Install from a GitHub checkout
+
+From this directory:
 
 ```bash
 python3 -m venv .venv
@@ -23,15 +61,12 @@ python -m pip install -r requirements-cpu.txt
 python -m pip install .
 ```
 
-On Windows, activate with `.venv\Scripts\activate` instead of `source`.
-The CPU requirements pin PyTorch 2.6.0 and NumPy 1.26.4. Only PyTorch and
-NumPy are required by the prediction code. The installation and both examples
-were verified on Linux with Python 3.12.7, PyTorch 2.6.0+cpu and NumPy 1.26.4.
+On Windows, activate with `.venv\Scripts\activate`. The CPU requirements pin
+PyTorch 2.6.0 and NumPy 1.26.4. The examples were verified on Linux with Python
+3.12.7, PyTorch 2.6.0+cpu and NumPy 1.26.4. On Apple Silicon macOS, replace the
+requirements command with `python -m pip install torch==2.6.0 numpy==1.26.4`.
 
-On Apple Silicon macOS, use `python -m pip install torch==2.6.0 numpy==1.26.4`
-instead of the CPU requirements file, then run `python -m pip install .`.
-
-Alternatively, create a Conda environment and install the package:
+Alternatively, from a checkout:
 
 ```bash
 conda env create -f environment.yml
@@ -39,17 +74,9 @@ conda activate phytoregnet-minimal
 python -m pip install .
 ```
 
-For an NVIDIA GPU, install the corresponding PyTorch wheel before installing
-this package. For example, the PyTorch 2.6.0 CUDA 11.8 build is:
-
-```bash
-python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cu118
-python -m pip install .
-```
-
-Select a wheel compatible with your driver using the
+For an NVIDIA GPU, install a compatible PyTorch wheel before PhytoRegNet and
+pass `--device cuda:0` when predicting. Select the wheel using the
 [official PyTorch installation instructions](https://pytorch.org/get-started/previous-versions/#v260).
-CPU inference is the default; GPU inference uses `--device cuda:0`.
 
 ## 2. Run the example
 
@@ -58,11 +85,13 @@ Nipponbare (NIP) source models. Each command performs **single-checkpoint**
 inference. The example FASTA contains two synthetic 8,192-bp windows to
 demonstrate the interface.
 
+Generate the example FASTA from the installed package in any working directory:
+
 ```bash
+phytoregnet-predict --write-example demo.fa
 phytoregnet-predict \
   --model arabidopsis \
-  --checkpoint weights/arabidopsis/fold_0.pt \
-  --fasta examples/demo.fa \
+  --fasta demo.fa \
   --output-prefix outputs/arabidopsis_demo
 ```
 
@@ -71,14 +100,16 @@ Use the NIP model with the same interface:
 ```bash
 phytoregnet-predict \
   --model rice_nip \
-  --checkpoint weights/rice_nip/fold_0.pt \
-  --fasta examples/demo.fa \
+  --fasta demo.fa \
   --output-prefix outputs/rice_demo
 ```
 
 The same command is available as `python -m phytoregnet_minimal`.
 Check `phytoregnet-predict --help` for batch size, CPU threads and device options.
-Checkpoint SHA-256 values are provided in [weights/manifest.json](weights/manifest.json).
+`--model` selects the matching installed fold 0 checkpoint by default. Pass
+`--checkpoint /path/to/model.pt` to use another checkpoint with the same
+architecture. Checkpoint SHA-256 values are provided in
+[the packaged manifest](https://github.com/Lv-BioInfo/PhytoRegNet-inference/blob/main/src/phytoregnet_minimal/weights/manifest.json).
 
 ## 3. Supply your own DNA
 
@@ -175,8 +206,8 @@ For a direct Python interface:
 from phytoregnet_minimal import Predictor
 from phytoregnet_minimal.sequence import read_fasta
 
-ids, sequences = read_fasta("examples/demo.fa")
-predictor = Predictor("arabidopsis", "weights/arabidopsis/fold_0.pt", device="cpu")
+ids, sequences = read_fasta("demo.fa")
+predictor = Predictor("arabidopsis", device="cpu")
 result = predictor.predict(sequences, batch_size=2)
 profile = result["profile"]
 log_count = result["log_count"]
@@ -187,19 +218,22 @@ log_count = result["log_count"]
 ```text
 PhytoRegNet_minimal/
 ├── README.md / README.zh-CN.md
-├── pyproject.toml
+├── LICENSE / PUBLISHING.zh-CN.md
+├── pyproject.toml / MANIFEST.in
 ├── requirements-cpu.txt / environment.yml
+├── conda-recipe/             Conda build recipe
 ├── src/phytoregnet_minimal/
 │   ├── model.py              Model blocks and forward pass
 │   ├── inference.py          Configuration and checkpoint loading
 │   ├── sequence.py           FASTA parsing and one-hot encoding
 │   ├── cli.py                Prediction command and output writing
-│   └── configs/              Arabidopsis and NIP inference configurations
-├── examples/demo.fa
-└── weights/                  Two original fold 0 checkpoints and manifest
+│   ├── configs/              Arabidopsis and NIP inference configurations
+│   ├── weights/              Two original fold 0 checkpoints and manifest
+│   └── data/demo.fa          Bundled synthetic example FASTA
+└── examples/demo.fa          The same example for a source checkout
 ```
 
-This directory is the root of the standalone reviewer repository.
-The code and configuration form an installable package. Keep the
-`weights/` and `examples/` directories beside the source when distributing the
-reviewer checkout; they are external assets rather than Python wheel contents.
+The distribution name for pip and conda is `phytoregnet`; the Python import
+is `phytoregnet_minimal`. This directory is the root of the standalone reviewer
+repository. The inference code and bundled model weights are distributed under
+the [MIT license](https://github.com/Lv-BioInfo/PhytoRegNet-inference/blob/main/LICENSE).

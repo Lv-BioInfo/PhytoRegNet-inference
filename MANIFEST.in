@@ -1,0 +1,8 @@
+include LICENSE README.md README.zh-CN.md PUBLISHING.zh-CN.md
+include pyproject.toml requirements-cpu.txt environment.yml
+recursive-include examples *.fa
+recursive-include conda-recipe *.yaml *.md
+recursive-include src/phytoregnet_minimal/configs *.json
+recursive-include src/phytoregnet_minimal/weights *.pt *.json
+recursive-include src/phytoregnet_minimal/data *.fa
+global-exclude __pycache__ *.py[cod]

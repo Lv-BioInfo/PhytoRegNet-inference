@@ -5,26 +5,31 @@ import csv
 import json
 import pickle
 import sys
+from importlib.resources import files
 from pathlib import Path
 
 import numpy as np
 import torch
 
 from . import __version__
-from .inference import MODEL_NAMES, Predictor
+from .inference import MODEL_NAMES, Predictor, bundled_checkpoint_path
 from .sequence import read_fasta
 
 
 def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--fasta", required=True, type=Path, help="FASTA with 8192-bp DNA windows."
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument(
+        "--fasta", type=Path, help="FASTA with 8192-bp DNA windows."
+    )
+    inputs.add_argument(
+        "--write-example", type=Path,
+        help="Write the bundled synthetic example FASTA to this path and exit.",
     )
     parser.add_argument(
         "--checkpoint",
-        required=True,
         type=Path,
-        help="Trained tensor state_dict (.pt).",
+        help="Custom tensor state_dict (.pt); defaults to the bundled model checkpoint.",
     )
     parser.add_argument("--model", choices=MODEL_NAMES, default="arabidopsis")
     parser.add_argument(
@@ -48,6 +53,15 @@ def make_parser() -> argparse.ArgumentParser:
 
 
 def run(args: argparse.Namespace) -> list[Path]:
+    if args.write_example is not None:
+        path = args.write_example
+        if path.exists() and not args.overwrite:
+            raise FileExistsError("Example FASTA already exists; add --overwrite to replace it.")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(
+            files("phytoregnet_minimal").joinpath("data", "demo.fa").read_bytes()
+        )
+        return [path]
     if args.batch_size < 1 or args.threads < 1:
         raise ValueError("--batch-size and --threads must be positive.")
     prefix = str(args.output_prefix)
@@ -60,7 +74,8 @@ def run(args: argparse.Namespace) -> list[Path]:
         raise FileExistsError(
             "Prediction files already exist; choose a new prefix or add --overwrite."
         )
-    input_paths = {args.fasta.resolve(), args.checkpoint.resolve()}
+    checkpoint_path = args.checkpoint or bundled_checkpoint_path(args.model)
+    input_paths = {args.fasta.resolve(), checkpoint_path.resolve()}
     if any(path.resolve() in input_paths for path in paths):
         raise ValueError("An output path would overwrite a FASTA or checkpoint input.")
     torch.set_num_threads(args.threads)
@@ -111,7 +126,7 @@ def run(args: argparse.Namespace) -> list[Path]:
     metadata = {
         "package_version": __version__,
         "model": args.model,
-        "checkpoint_filename": args.checkpoint.name,
+        "checkpoint_filename": predictor.checkpoint.name,
         "checkpoint_sha256": predictor.checkpoint_sha256,
         "input_fasta_filename": args.fasta.name,
         "number_of_sequences": len(identifiers),
